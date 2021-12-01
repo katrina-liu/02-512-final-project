@@ -1,4 +1,9 @@
 # 02-512-final-project
+## Project Structure
+1. data: store all Hi-C matrices
+2. src: store all implemented TAD boundary finding algorithm
+3. test: store all implementation of finding testing measuring indices
+
 ## Nov. 30 Meeting Update:
 ### Three phase plan:
 1. Hi-C data synthesis: simulate according to the two segmentation statistic model, link: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4147896/ 
