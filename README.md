@@ -8,7 +8,7 @@
 ### Three phase plan:
 1. Hi-C data synthesis: simulate according to the two segmentation statistic model, link: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4147896/ 
     - Input: n (size of Hi-C data), K (number of domains)
-    - Output: t (a list of two-element tuples representing boundaries), C (2d list representing Hi-C data)
+    - Output: t (a list of two-element tuples representing boundaries, [(t0, t1),(t1,t2),....], easier for testing if they are uniform), C (2d list representing Hi-C data)
 3. TAD boundary finding algorithms: Armatus, HiCSeg(if time allows)
     - Input:  n (size of Hi-C data), C (2d list representing Hi-C data)
     - Output: t (a list of two-element tuples representing boundaries)
