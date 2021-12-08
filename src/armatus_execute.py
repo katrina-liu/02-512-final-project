@@ -1,7 +1,7 @@
 import subprocess
 from os import listdir
 
-data_path = "../data/"
+data_path = "../data/GSE66733_Hi-C_MCF7_MCF10A_processed_HiCfiles/40kb/"
 gamma = 0.5
 output_path = "results/"
 
