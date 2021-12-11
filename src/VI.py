@@ -1,5 +1,6 @@
 import numpy as np
 from math import log
+from os import listdir
 
 def variation_of_information(X, Y):
   n = max(float(X[-1][-1]),float(Y[-1][-1]))
