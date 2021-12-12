@@ -48,11 +48,16 @@ def variation_of_information(X, Y):
     HC_ += -q * (log(q, 2))
   return HC + HC_ - 2*sigma
 
+def JI(pred, truth):
+    count = 0
+    intersection = len(list(set(pred).intersection(truth)))
+    union = (len(pred) + len(truth)) - intersection
+    return intersection / union
 
 
 for i in range(len(MCF7_pred)):
   print(MCF7_pred[i])
-  path = "src/HiCSeg_SpectralTAD_res/MCF10a/{fname}/hicseg_res.csv" #change 7 to 10a
+  path = "src/HiCSeg_SpectralTAD_res/MCF10a/{fname}/spec_res.csv" #change 7 to 10a
   pred = []
   with open(path.format(fname = MCF7_pred[i]))as f:
     for line in f:
@@ -61,6 +66,12 @@ for i in range(len(MCF7_pred)):
 
   pred = pred[1:] #remove 'start, end'
   pred = pred[:-1] #remove last term that is a replicate
+  #JI
+  pred = np.asarray(pred)
+  pred = pred.astype(float)
+#   pred = [[j+1 for j in i] for i in pred]
+  pred_endpt = [row[1] for row in pred]
+
 #   print(pred)
 #   print(MCF7_pred[i])
   truth = []
@@ -74,7 +85,12 @@ for i in range(len(MCF7_pred)):
 
   truth = np.asarray(truth)
   truth = truth.astype(float)
+
+  truth_endpt = [row[1] for row in truth]
   # print(pred, truth)
-  VI = variation_of_information(pred, truth)
-  print(VI)
+#   VI = variation_of_information(pred, truth)
+#   print(VI)
+#   print(pred_endpt, truth_endpt)
+  J_I = JI(pred_endpt, truth_endpt)
+  print(J_I)
       
