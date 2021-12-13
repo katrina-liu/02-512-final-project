@@ -5,44 +5,26 @@ from os import listdir
 
 
 #armatus
-directory = 'src/results/'
+directory = 'src/HiCSeg_SpectralTAD_res/MCF7'
 
-fnames = list(fname for fname in listdir(directory) if fname.endswith('.consensus.txt'))
+fnames = list(fname for fname in listdir(directory) )
 fnames.sort()
-# print(fnames)
-half = int(len(fnames)/2)
-MCF7_pred = fnames[0:half - 1]
-MCF10_pred = fnames[half:]
+fnames = fnames[1:]
+print(fnames)
+MCF7_pred = fnames
+MCF10_pred = fnames
 
-
-#get the results
-
+#truth
 directory = 'data/GSE66733_Hi-C_MCF7_MCF10A_processed_HiCfiles_domains/TAD_boundaries'
 fnames = list(fname for fname in listdir(directory) ) # if fname.endswith('.boundaries')
 half_t = int(len(fnames)/2)
 fnames.sort()
 half_t = int(len(fnames)/2)
 # print(fnames)
-# even is 7, odd is 10
 MCF10_truth = fnames[0:half_t - 1]
 MCF7_truth = fnames[half_t:]
-# print((MCF7_truth))
-
-# print((MCF7_truth))
-# print((MCF10_truth))
-
-# print(len(MCF7_truth))
 
 
-# print(MCF10_truth)
-# print(len(fnames))
-# print(MCF10)
-
-def JI(pred, truth):
-    count = 0
-    intersection = len(list(set(pred).intersection(truth)))
-    union = (len(pred) + len(truth)) - intersection
-    return intersection / union
 
 def variation_of_information(X, Y):
   n = max(float(X[-1][-1]),float(Y[-1][-1]))
@@ -52,6 +34,7 @@ def variation_of_information(X, Y):
   HC_ = 0
   for x in X:
     p = float(int(float(x[1]))-int(float(x[0]))) / n
+    # print(p)
     HC += -p *(log(p, 2))
     for y in Y:
       q =  float(int(float(y[1]))-int(float(y[0]))) / n
@@ -65,57 +48,49 @@ def variation_of_information(X, Y):
     HC_ += -q * (log(q, 2))
   return HC + HC_ - 2*sigma
 
-# VI = variation_of_information(pred, truth)
-# print(VI)
+def JI(pred, truth):
+    count = 0
+    intersection = len(list(set(pred).intersection(truth)))
+    union = (len(pred) + len(truth)) - intersection
+    return intersection / union
 
-#armatus
-MCF7_results = []
-MCF10_results = []
 
-for i in range(len(MCF10_pred)):
-  print(MCF10_pred[i].split('_')[4])
-  path = "src/results/{fname}"
+for i in range(len(MCF7_pred)):
+  print(MCF7_pred[i])
+  path = "src/HiCSeg_SpectralTAD_res/MCF10a/{fname}/spec_res.csv" #change 7 to 10a
   pred = []
   with open(path.format(fname = MCF7_pred[i]))as f:
     for line in f:
-      start, end = line.strip().split()[1], line.strip().split()[2]
+      start, end = line.strip().split(',')[2], line.strip().split(',')[3]
       pred.append([start, end])
 
-  # print(MCF10_truth[i].split('_')[4])
+  pred = pred[1:] #remove 'start, end'
+  pred = pred[:-1] #remove last term that is a replicate
+  #JI
   pred = np.asarray(pred)
   pred = pred.astype(float)
-  pred = [[j*40000 for j in i] for i in pred]
-  #JI
-  
+#   pred = [[j+1 for j in i] for i in pred]
   pred_endpt = [row[1] for row in pred]
-  pred_endpt = [i+1 for i in pred_endpt]
-  # pred = np.asarray(pred)
-  # for j in range(len(pred)):
-  #     for k in range(len(pred[i])):
-  #       pred[j][k] = pred[j][k] * 40000
-  #       print(pred[j][k])
+
+#   print(pred)
+#   print(MCF7_pred[i])
   truth = []
-  path = "data/GSE66733_Hi-C_MCF7_MCF10A_processed_HiCfiles_domains/TAD_boundaries/{fname}"
-  with open(path.format(fname = MCF10_truth[i]))as f:
+  path = "data/GSE66733_Hi-C_MCF7_MCF10A_processed_HiCfiles_domains/TAD_boundaries/HiCStein-MCF10a-WT__hg19__{fname}__C-40000-iced.is1000000.ids240000.insulation.boundaries"
+  with open(path.format(fname = MCF7_pred[i]))as f:
     for line in f:
       start, end = line.strip().split()[1], line.strip().split()[2]
       truth.append([start, end])
     #process so that range is similar
   truth = truth[1:] #remove 'start, end'
+
   truth = np.asarray(truth)
   truth = truth.astype(float)
+
   truth_endpt = [row[1] for row in truth]
-  # print(truth_endpt)
   # print(pred, truth)
-  # VI = variation_of_information(pred, truth)
-  # print(VI)
-  # print(pred_endpt, truth_endpt)
+#   VI = variation_of_information(pred, truth)
+#   print(VI)
+#   print(pred_endpt, truth_endpt)
   J_I = JI(pred_endpt, truth_endpt)
   print(J_I)
       
-
-# for i in range(len(MCF10_pred)):
-#   path = "src/results/{fname}"
-#   with open(path.format(fname = MCF10_pred[i]))as f:
-#     for line in f:
-#       start, end = line.strip().split()[1], line.strip().split()[2]
