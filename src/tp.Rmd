@@ -1,0 +1,81 @@
+---
+title: "02-518"
+output: html_notebook
+---
+```{r}
+library(SpectralTAD)
+library(HiCseg)
+t1 = 0
+t2 = 0
+```
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+tmp = read.table("resolution_40k/cis/ice_normalization/chr22_40k_normalized_matrix.txt")
+
+```{r}
+for (i in 1:22) {
+  chr = sprintf("chr%d", i)
+  matname = sprintf("data/MCF7/HiCStein-MCF10a-WT__hg19__%s__C-40000-iced.matrix", chr)
+  nor = read.table(file=matname,row.names = 1, header = TRUE)
+  nor <- as.matrix(nor)
+  l1 = dim(nor)[1]
+  colnames(nor)<-c(seq(1, l1 * 40000, by=40000))
+  rownames(nor)<-c(seq(1, l1 * 40000, by=40000))
+  nor[is.na(nor)] <- 0
+  st1<-Sys.time()
+  res1 = SpectralTAD(nor, chr = chr, resolution = 40000, qual_filter = FALSE)
+  et1<-Sys.time()
+  t1 <- t1 + et1 - st1
+  k = length(res1$Level_1$chr)
+  st2<-Sys.time()
+  restmp2 = HiCseg_linkC_R(l1,k,"G",nor,"D")
+  et2<-Sys.time()
+  t2 <- t2 + et2 - st2
+  res2 = restmp2$t_hat * 40000
+  end2 = append(res2, l1 * 40000)[-1]
+  col2 = rep(chr, k)
+  res2file = data.frame(col2, res2, end2)
+  dir.create(sprintf("MCF10a/%s", chr))
+  write.csv(res1, sprintf("MCF10a/%s/spec_res.csv", chr))
+  write.csv(res2file, sprintf("MCF10a/%s/hicseg_res.csv", chr))
+}
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+```{r}
+library(TADCompare)
+is.nan.data.frame <- function(x)
+do.call(cbind, lapply(x, is.nan))
+
+chr2 = "chr11"
+nor_f = sprintf("data/cancer_normal/HiCStein-MCF7-WT__hg19__%s__C-40000-iced.matrix", chr2)
+nor = read.table(file=nor_f,row.names = 1, header = TRUE)
+nor <- as.matrix(nor)
+l1 = dim(nor)[1]
+colnames(nor)<-c(seq(1, l1 * 40000, by=40000))
+nor1 <- matrix(unlist(nor), nrow = l1, ncol = l1)
+can = read.table(sprintf("data/cancer_normal/HiCStein-MCF10a-WT__hg19__%s__C-40000-iced.matrix", chr2), header = TRUE, row.names = 1)
+l2 = length(can)
+can1 <- matrix(unlist(can), nrow = l2, ncol = l2)
+
+nor1[is.nan(nor1)] <- 0
+can1[is.nan(can1)] <- 0
+# can <- matrix(data.frame(can))
+# l1 = sqrt(length(nor))
+# nor = matrix(nor, nrow = l1)
+# l2 = sqrt(length(can))
+# cal = matrix(can, nrow = l2)
+# colnames(nor)<-c(seq(1, l1 * 40000, by=40000))
+# rownames(nor)<-c(seq(1, l1 * 40000, by=40000))
+# colnames(can)<-c(seq(1, l2 * 40000, by=40000))
+# rownames(can)<-c(seq(1, l2 * 40000, by=40000))
+
+results = TADCompare(nor1, can1, resolution = 40000)
+```
